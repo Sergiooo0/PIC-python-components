@@ -28,16 +28,55 @@ class SystemPerformanceManager(object):
 	"""
 
 	def __init__(self):
-		pass
+		configUtil = ConfigUtil()
+		self.pollRate = configUtil.getInteger(
+			ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.POLL_CYCLES_KEY, 
+			defaultVal = ConfigConst.DEFAULT_POLL_CYCLES)
+		
+		self.localitionID = configUtil.getProperty(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.DEVICE_LOCATION_ID_KEY,
+			defaultVal = ConfigConst.NOT_SET)
+		
+		if self.pollRate <= 0:
+			self.pollRate = ConfigConst.DEFAULT_POLL_CYCLES
+
+		self.dataMsgListener = None
+
+		#Note: The next four definitions are for different sub-task
+		self.scheduler = BackgroundScheduler()
+		self.scheduler.add_job(self.handleTelemetry, 
+							   'interval', 
+							   seconds = self.pollRate,
+							   misfire_grace_time=10)
+		
+		self.cpuUtilTask = SystemCpuUtilTask()
+		self.memUtilTask = SystemMemUtilTask()
 
 	def handleTelemetry(self):
-		pass
+		cpuUtilPct=self.cpuUtilTask.getTelemetryValue()
+		memUtilPct=self.memUtilTask.getTelemetryValue()
+
+		logging.debug(f"CPU utilization is {str(cpuUtilPct)}%. Memory utilization is {str(memUtilPct)}%.")
 		
 	def setDataMessageListener(self, listener: IDataMessageListener) -> bool:
 		pass
 	
 	def startManager(self):
-		pass
-		
+		logging.info("Started SystemPerformanceManager.")
+
+		if not self.scheduler.running:
+			self.scheduler.start()
+			logging.info("SystemPerformanceManager started.")
+		else:
+			logging.warning("SystemPerformanceManager scheduler is already running.")
+
 	def stopManager(self):
-		pass
+		logging.info("Stopped SystemPerformanceManager.")
+
+		try:
+			self.scheduler.shutdown()
+			logging.info("SystemPerformanceManager stopped.")
+		except:
+			logging.warning("SystemPerformanceManager scheduler already stopped.")
