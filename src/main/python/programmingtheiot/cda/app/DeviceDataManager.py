@@ -185,7 +185,7 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		if data:
 			logging.debug("Incoming sensor data received (from sensor manager): " + str(data))
-			self._handleSensorDataAnalysis(data)
+			self._handleSensorDataAnalysis("resource", data)
 			return True
 		else:
 			logging.warning("Incoming sensor data is invalid (null). Ignoring.")
@@ -245,7 +245,7 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		pass
 		
-	def _handleSensorDataAnalysis(self, resource = None, data: SensorData = None):
+	def _handleSensorDataAnalysis(self, resource, data: SensorData):
 		"""
 		Call this from handleSensorMessage() to determine if there's
 		any action to take on the message. Steps to take:
