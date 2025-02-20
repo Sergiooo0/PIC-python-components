@@ -138,6 +138,9 @@ class SensorAdapterManager(object):
 	def setDataMessageListener(self, listener: IDataMessageListener) -> bool:
 		if listener:
 			self.dataMsgListener = listener
+			return True
+		else:
+			return False
 	
 	def startManager(self):
 		logging.info("Starting SensorAdapterManager...")

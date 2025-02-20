@@ -26,11 +26,75 @@ class ActuatorAdapterManager(object):
 	
 	"""
 	
-	def __init__(self):
-		pass
+	def __init__(self, dataMsgListener: IDataMessageListener = None):
+		self.configUtil = ConfigUtil()
+		self.dataMsgListener = dataMsgListener
+		self.useSimulator = self.configUtil.getBoolean(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.ENABLE_SIMULATOR_KEY)
+		
+		self.useEmulator = self.configUtil.getBoolean(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.ENABLE_EMULATOR_KEY)
+		
+		self.deviceID = self.configUtil.getProperty(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.DEVICE_ID_KEY,
+			defaultVal = ConfigConst.NOT_SET)
+		
+		self.locationID = self.configUtil.getProperty(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.DEVICE_LOCATION_ID_KEY,
+			defaultVal = ConfigConst.NOT_SET)
+		
+		self.humidifierActuator = None
+		self.hvacActuator = None
+		self.ledDisplayActuator = None
 
-	def sendActuatorCommand(self, data: ActuatorData) -> bool:
-		pass
+		self._initEnvironmentalActuationTask()
+
+	def _initEnvironmentalActuationTask(self):
+		if self.useSimulator:
+			logging.info("ActuatorAdapterManager using SIMULATED ActuatorData instance.")
+			self.humidifierActuator = HumidifierActuatorSimTask()
+			self.hvacActuator = HvacActuatorSimTask()
+		elif self.useEmulator:
+			logging.info("ActuatorAdapterManager using EMULATED ActuatorData instance.")
+
+	def sendActuatorCommand(self, data: ActuatorData) -> ActuatorData:
+		if data and not data.isResponseFlagEnabled():
+			# first check if the actuation event is destined for this device
+			if data.getLocationID() == self.locationID:
+				logging.info(f"Actuator command received for location ID {str(data.getLocationID())}. Processing...")
+
+				aType = data.getTypeID()
+				responseData = None
+
+				# TODO: implement appropriate logging and error handling
+				if aType == ConfigConst.HUMIDIFIER_ACTUATOR_TYPE and self.humidifierActuator:
+					responseData = self.humidifierActuator.updateActuator(data)
+				elif aType == ConfigConst.HVAC_ACTUATOR_TYPE and self.hvacActuator:
+					responseData = self.hvacActuator.updateActuator(data)
+				elif aType == ConfigConst.LED_DISPLAY_ACTUATOR_TYPE and self.ledDisplayActuator:
+					responseData = self.ledDisplayActuator.updateActuator(data)
+				else:
+					logging.warning("No valid actuator type. Ignoring actuation for type: %s", data.getTypeID())
+
+				# TODO: in a later lab module, the responseData instance will be
+				# passed to a callback function implemented in DeviceDataManager
+				# via IDataMessageListener
+
+				return responseData
+			else:
+				logging.warning(f"Location ID doesn't match. Ignoring actuation: (me) {str(self.locationID)} != (you) {str(data.getLocationID())}")
+		else:
+			logging.warning("Actuator request received. Message is empty or response. Ignoring.")
+
+		return None
 	
 	def setDataMessageListener(self, listener: IDataMessageListener) -> bool:
-		pass
+		if listener:
+			self.dataMsgListener = listener
+			return True
+		else:
+			return False
