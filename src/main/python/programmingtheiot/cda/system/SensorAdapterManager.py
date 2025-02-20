@@ -30,16 +30,131 @@ class SensorAdapterManager(object):
 	"""
 
 	def __init__(self):
-		pass
+		self.configUtil = ConfigUtil()
+
+		self.pollRate = self.configUtil.getInteger(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.POLL_CYCLES_KEY, 
+			defaultVal = ConfigConst.DEFAULT_POLL_CYCLES)
+		
+		self.useEmulator = self.configUtil.getBoolean(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.ENABLE_EMULATOR_KEY)
+		
+		self.useSimulator = self.configUtil.getBoolean(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.ENABLE_SIMULATOR_KEY)
+		
+		self.locationID = self.configUtil.getProperty(
+			section = ConfigConst.CONSTRAINED_DEVICE, 
+			key = ConfigConst.DEVICE_LOCATION_ID_KEY, 
+			defaultVal = ConfigConst.NOT_SET)
+		
+		if self.pollRate <= 0:
+			self.pollRate = ConfigConst.DEFAULT_POLL_CYCLES
+
+		self.scheduler = BackgroundScheduler()
+		self.scheduler.add_job(self.handleTelemetry, 
+						 'interval', 
+						 seconds = self.pollRate,
+						 max_instances=2,
+						 coalesce=True,
+						 misfire_grace_time=15)
+		
+		self.dataMsgListener = None
+		self.humidityAdapter = None
+		self.tempAdapter = None
+		self.pressureAdapter = None
+
+		self._initEnvironmentalSensorTasks()
+
+	def _initEnvironmentalSensorTasks(self):
+		humidityFloor   =self.configUtil.getFloat(section = ConfigConst.CONSTRAINED_DEVICE, 
+											key = ConfigConst.HUMIDITY_SIM_FLOOR_KEY, 
+											defaultVal = SensorDataGenerator.LOW_NORMAL_ENV_HUMIDITY)
+		humidityCeiling = self.configUtil.getFloat( section = ConfigConst.CONSTRAINED_DEVICE, 
+											key = ConfigConst.HUMIDITY_SIM_CEILING_KEY, 
+											defaultVal = SensorDataGenerator.HI_NORMAL_ENV_HUMIDITY)
+
+		pressureFloor   = \
+			self.configUtil.getFloat( \
+				section = ConfigConst.CONSTRAINED_DEVICE, 
+				key = ConfigConst.PRESSURE_SIM_FLOOR_KEY, 
+				defaultVal = SensorDataGenerator.LOW_NORMAL_ENV_PRESSURE)
+		pressureCeiling = \
+			self.configUtil.getFloat( \
+				section = ConfigConst.CONSTRAINED_DEVICE, 
+				key = ConfigConst.PRESSURE_SIM_CEILING_KEY, 
+				defaultVal = SensorDataGenerator.HI_NORMAL_ENV_PRESSURE)
+
+		tempFloor = self.configUtil.getFloat(
+				section = ConfigConst.CONSTRAINED_DEVICE, 
+				key = ConfigConst.TEMP_SIM_FLOOR_KEY, 
+				defaultVal = SensorDataGenerator.LOW_NORMAL_INDOOR_TEMP)
+		tempCeiling = self.configUtil.getFloat(
+				section = ConfigConst.CONSTRAINED_DEVICE, 
+				key = ConfigConst.TEMP_SIM_CEILING_KEY, 
+				defaultVal = SensorDataGenerator.HI_NORMAL_INDOOR_TEMP)
+
+		if self.useSimulator:
+			# To implemented emulator, we need to set eneableSimulator to False
+			# in PiotConfig.props file
+			logging.info("Generating sensor data simulator.")
+			self.dataGenerator = SensorDataGenerator()
+
+			humidityData = \
+				self.dataGenerator.generateDailyEnvironmentHumidityDataSet( \
+					minValue = humidityFloor, maxValue = humidityCeiling, useSeconds = False)
+			pressureData = \
+				self.dataGenerator.generateDailyEnvironmentPressureDataSet( \
+					minValue = pressureFloor, maxValue = pressureCeiling, useSeconds = False)
+			tempData     = \
+				self.dataGenerator.generateDailyIndoorTemperatureDataSet( \
+					minValue = tempFloor, maxValue = tempCeiling, useSeconds = False)
+
+			self.humidityAdapter = HumiditySensorSimTask(dataSet = humidityData)
+			self.pressureAdapter = PressureSensorSimTask(dataSet = pressureData)
+			self.tempAdapter     = TemperatureSensorSimTask(dataSet = tempData)
 
 	def handleTelemetry(self):
-		pass
+		# handleTelemetry() is called every pollRate seconds
+		humidityData = self.humidityAdapter.generateTelemetry()
+		pressureData = self.pressureAdapter.generateTelemetry()
+		tempData = self.tempAdapter.generateTelemetry()
+
+		humidityData.setLocationID(self.locationID)
+		pressureData.setLocationID(self.locationID)
+		tempData.setLocationID(self.locationID)
+
+		logging.debug(f"Generated humidity data: {str(humidityData)}")
+		logging.debug(f"Generated pressure data: {str(pressureData)}")
+		logging.debug(f"Generated temperature data: {str(tempData)}")
+
+		if self.dataMsgListener:
+			self.dataMsgListener.handleSensorMessage(humidityData)
+			self.dataMsgListener.handleSensorMessage(pressureData)
+			self.dataMsgListener.handleSensorMessage(tempData)
 		
 	def setDataMessageListener(self, listener: IDataMessageListener) -> bool:
-		pass
+		if listener:
+			self.dataMsgListener = listener
 	
 	def startManager(self):
-		pass
+		logging.info("Starting SensorAdapterManager...")
+		
+		if not self.scheduler.running:
+			self.scheduler.start()
+			return True
+		else:
+			logging.info("SensorAdapterManager is already running. Ignoring start request.")
+			return False
 		
 	def stopManager(self):
-		pass
+		logging.info("Stopping SensorAdapterManager...")
+		
+		if self.scheduler.running:
+			self.scheduler.shutdown()
+			return True
+		else:
+			logging.info("SensorAdapterManager is not running. Ignoring stop request.")
+			return False
