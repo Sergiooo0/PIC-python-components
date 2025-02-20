@@ -26,7 +26,7 @@ class SystemPerformanceData(BaseIotData):
 		self.diskUtil = self.DEFAULT_VAL
 
 	def __str__(self):
-		return f"SystemPerformanceData [cpuUtil={self.cpuUtil}%, memUtil={self.memUtil}MB, diskUtil={self.diskUtil}]"
+		return super(SystemPerformanceData, self).__str__() +f" [cpuUtil={self.cpuUtil}%, memUtil={self.memUtil}MB, diskUtil={self.diskUtil}]"
 	
 	def getCpuUtilization(self):
 		return self.cpuUtil

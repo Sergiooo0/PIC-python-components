@@ -12,8 +12,11 @@ from datetime import datetime, timezone
 import programmingtheiot.common.ConfigConst as ConfigConst
 
 from programmingtheiot.common.ConfigUtil import ConfigUtil
+from abc import ABC, abstractmethod
 
-class BaseIotData(object):
+
+
+class BaseIotData(ABC):
 	"""
 	This is the base class for all data containers. It stores values that each
 	sub-class is expected to set and / or utilization, including the name,
