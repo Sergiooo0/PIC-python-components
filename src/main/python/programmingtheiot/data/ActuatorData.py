@@ -40,6 +40,10 @@ class ActuatorData(BaseIotData):
 	def setCommand(self, command: int):
 		self.command = command
 		self.updateTimeStamp()
+
+	def setAsResponse(self):
+		self.isResponse = True
+		self.updateTimeStamp()
 		
 	def setStateData(self, stateData: str):
 		if stateData:
