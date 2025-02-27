@@ -20,6 +20,8 @@ from programmingtheiot.data.ActuatorData import ActuatorData
 from programmingtheiot.cda.sim.HvacActuatorSimTask import HvacActuatorSimTask
 from programmingtheiot.cda.sim.HumidifierActuatorSimTask import HumidifierActuatorSimTask
 
+from importlib import import_module
+
 class ActuatorAdapterManager(object):
 	"""
 	Shell representation of class for student implementation.
@@ -60,6 +62,20 @@ class ActuatorAdapterManager(object):
 			self.hvacActuator = HvacActuatorSimTask()
 		elif self.useEmulator:
 			logging.info("ActuatorAdapterManager using EMULATED ActuatorData instance.")
+			# load the environmental tasks for simulated actuation
+			hueModule=import_module('programmingtheiot.cda.emulated.HumidifierEmulatorTask','HumidiferEmulatorTask')
+			hueClazz=getattr(hueModule,'HumidifierEmulatorTask')
+			self.humidifierActuator=hueClazz()
+
+			# create the HVAC actuator emulator
+			hveModule=import_module('programmingtheiot.cda.emulated.HvacEmulatorTask','HvacEmulatorTask')
+			hveClazz=getattr(hveModule,'HvacEmulatorTask')
+			self.hvacActuator=hveClazz()
+
+			# create the LED display actuator emulator
+			leDisplayModule=import_module('programmingtheiot.cda.emulated.LedDisplayEmulatorTask','LedDisplayEmulatorTask')
+			leClazz=getattr(leDisplayModule,'LedDisplayEmulatorTask')
+			self.ledDisplayActuator=leClazz()
 
 	def sendActuatorCommand(self, data: ActuatorData) -> ActuatorData:
 		if data and not data.isResponseFlagEnabled():
