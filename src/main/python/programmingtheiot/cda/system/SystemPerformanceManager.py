@@ -18,6 +18,7 @@ from programmingtheiot.common.IDataMessageListener import IDataMessageListener
 
 from programmingtheiot.cda.system.SystemCpuUtilTask import SystemCpuUtilTask
 from programmingtheiot.cda.system.SystemMemUtilTask import SystemMemUtilTask
+from programmingtheiot.cda.system.SystemDiskUtilTask import SystemDiskUtilTask
 
 from programmingtheiot.data.SystemPerformanceData import SystemPerformanceData
 
@@ -53,15 +54,29 @@ class SystemPerformanceManager(object):
 		
 		self.cpuUtilTask = SystemCpuUtilTask()
 		self.memUtilTask = SystemMemUtilTask()
+		self.diskUtilTask = SystemDiskUtilTask()
 
 	def handleTelemetry(self):
-		cpuUtilPct=self.cpuUtilTask.getTelemetryValue()
-		memUtilPct=self.memUtilTask.getTelemetryValue()
+		self.cpuUtilPct=self.cpuUtilTask.getTelemetryValue()
+		self.memUtilPct=self.memUtilTask.getTelemetryValue()
+		self.diskUtilPct = self.diskUtilTask.getTelemetryValue()
 
-		logging.debug(f"CPU utilization is {str(cpuUtilPct)}%. Memory utilization is {str(memUtilPct)}%.")
+		logging.debug(f"CPU utilization is {str(self.cpuUtilPct)}%.\nMemory utilization is {str(self.memUtilPct)}MB.\nDisk utilization is {str(self.diskUtilPct)}%")
+
+		sysPerfData = SystemPerformanceData()
+		sysPerfData.setLocationID(self.localitionID)
+		sysPerfData.setCpuUtilization(self.cpuUtilPct)
+		sysPerfData.setMemoryUtilization(self.memUtilPct)
+		sysPerfData.setDiskUtilization(self.diskUtilPct)
+
+		if self.dataMsgListener:
+			self.dataMsgListener.handleSystemPerformanceMessage(data=sysPerfData)
 		
 	def setDataMessageListener(self, listener: IDataMessageListener) -> bool:
-		pass
+		if listener:
+			self.dataMsgListener = listener
+			return True
+		return False
 	
 	def startManager(self):
 		logging.info("Started SystemPerformanceManager.")
