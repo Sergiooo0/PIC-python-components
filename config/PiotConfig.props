@@ -48,11 +48,17 @@ enableSensing    = True
 enableActuation  = True
 enableLogging    = True
 enableSimulator = False
+enableRedis      = True
 pollCycleSecs    = 5
 testGdaDataPath  = /tmp/gda-data
 testCdaDataPath  = /tmp/cda-data
 testEmptyApp     = False
 runForever       = False
+
+# configurable limits for actuator triggers
+handleTempChangeOnDevice = True
+triggerHvacTempFloor     = 18.0
+triggerHvacTempCeiling   = 20.0
 
 [Data.GatewayService]
 credFile = ./cred/PiotPersistenceCred.props
@@ -67,11 +73,6 @@ pressureSimFloor   =  990.0
 pressureSimCeiling = 1010.0
 tempSimFloor       =   15.0
 tempSimCeiling     =   25.0
-
-# configurable limits for actuator triggers
-handleTempChangeOnDevice = True
-triggerHvacTempFloor     = 18.0
-triggerHvacTempCeiling   = 20.0
 
 # camera settings
 streamHostAddr      = 127.0.0.1

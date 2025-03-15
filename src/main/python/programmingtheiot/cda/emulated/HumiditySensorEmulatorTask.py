@@ -34,8 +34,6 @@ class HumiditySensorEmulatorTask(BaseSensorSimTask):
 			ConfigConst.CONSTRAINED_DEVICE, ConfigConst.ENABLE_EMULATOR_KEY
 		)
 
-		print(enableEmulation)
-
 		self.sh = SenseHAT(emulate = enableEmulation)
 	
 	def generateTelemetry(self) -> SensorData:

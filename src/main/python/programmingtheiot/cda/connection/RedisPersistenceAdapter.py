@@ -74,11 +74,11 @@ class RedisPersistenceAdapter():
             logging.info("Redis client is not connected. Ignoring disconnect request.")
             return True
         
-    def storeData(self, resource: ResourceNameEnum, data:SensorData) -> bool:
+    def storeData(self, resource: str, data:SensorData) -> bool:
         if self.is_connected:
             try:
-                self.client.set(resource.value, data.getValue())
-                logging.info(f"Stored data from {resource.value} : {data.getValue()}")
+                self.client.set(resource, data.getValue())
+                logging.info(f"Stored data from {resource} : {data.getValue()} in Redis")
                 return True
             except Exception as e:
                 logging.error("Failed to store data in Redis. Exception: " + str(e))
@@ -86,7 +86,32 @@ class RedisPersistenceAdapter():
         else:
             logging.info("Redis client is not connected. Ignoring store request.")
             return False
+        
+    def getData(self, resource: str) -> SensorData:
+        """
+        Retrieves the data from the Redis server.
+        (An extra function to test redis)
+        
+        @param resource The resource name to retrieve.
+        @return SensorData
+        """
+        if self.is_connected:
+            try:
+                value = self.client.get(resource)
+                logging.info(f"Retrieved data from {resource} : {value} from Redis")
+                sd = SensorData()
+                sd.setValue(float(value))
+                sd.setName(resource)
+                return sd
+            except Exception as e:
+                logging.error("Failed to retrieve data from Redis. Exception: " + str(e))
+                return None
+        else:
+            logging.info("Redis client is not connected. Ignoring get request.")
+            return None
 
 if __name__ == "__main__":
     redis = RedisPersistenceAdapter()
+    redis.connectClient()
+    print(redis.getData(ConfigConst.HUMIDITY_SENSOR_NAME))
         

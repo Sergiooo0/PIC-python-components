@@ -11,6 +11,7 @@ import logging
 
 from programmingtheiot.cda.connection.CoapClientConnector import CoapClientConnector
 from programmingtheiot.cda.connection.MqttClientConnector import MqttClientConnector
+from programmingtheiot.cda.connection.RedisPersistenceAdapter import RedisPersistenceAdapter
 
 from programmingtheiot.cda.system.ActuatorAdapterManager import ActuatorAdapterManager
 from programmingtheiot.cda.system.SensorAdapterManager import SensorAdapterManager
@@ -50,6 +51,10 @@ class DeviceDataManager(IDataMessageListener):
 			section = ConfigConst.CONSTRAINED_DEVICE,
 			key = ConfigConst.ENABLE_ACTUATION_KEY)
 		
+		self.enableRedis = self.configUtil.getBoolean(
+			section = ConfigConst.CONSTRAINED_DEVICE,
+			key = ConfigConst.ENABLE_REDIS_KEY)
+		
 		self.sysPerfMgr = None
 		self.sensorAdapterMgr = None
 		self.actuatorAdapterMgr = None
@@ -57,6 +62,12 @@ class DeviceDataManager(IDataMessageListener):
 		self.mqttClient = None
 		self.coapClient = None
 		self.coapServer = None
+
+		if self.enableRedis:
+			logging.info("Redis client is enabled.")
+			self.redisClient = RedisPersistenceAdapter()
+		else:
+			self.redisClient = None
 
 		if self.enableSystemPerf:
 			self.sysPerfMgr = SystemPerformanceManager()
@@ -185,7 +196,8 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		if data:
 			logging.debug("Incoming sensor data received (from sensor manager): " + str(data))
-			self._handleSensorDataAnalysis("resource", data)
+			resource = data.getName()
+			self._handleSensorDataAnalysis(resource, data)
 			return True
 		else:
 			logging.warning("Incoming sensor data is invalid (null). Ignoring.")
@@ -222,6 +234,9 @@ class DeviceDataManager(IDataMessageListener):
 		if self.sensorAdapterMgr:
 			self.sensorAdapterMgr.startManager()
 
+		if self.redisClient:
+			self.redisClient.connectClient()
+
 		logging.info("Started DeviceDataManager.")
 		
 	def stopManager(self):
@@ -232,6 +247,9 @@ class DeviceDataManager(IDataMessageListener):
 
 		if self.sensorAdapterMgr:
 			self.sensorAdapterMgr.stopManager()
+
+		if self.redisClient:
+			self.redisClient.disconnectClient()
 
 		logging.info("Stopped DeviceDataManager.")
 		
@@ -245,7 +263,7 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		pass
 		
-	def _handleSensorDataAnalysis(self, resource, data: SensorData):
+	def _handleSensorDataAnalysis(self, resource: str, data: SensorData):
 		"""
 		Call this from handleSensorMessage() to determine if there's
 		any action to take on the message. Steps to take:
@@ -267,6 +285,10 @@ class DeviceDataManager(IDataMessageListener):
 				ad.setCommand(ConfigConst.COMMAND_OFF)
 
 			self.handleActuatorCommandMessage(ad)
+		
+		if self.redisClient:
+			self.redisClient.storeData(resource, data)
+
 		
 	def _handleUpstreamTransmission(self, resourceName: ResourceNameEnum, msg: str):
 		"""
