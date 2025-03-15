@@ -1,0 +1,17 @@
+// .vscode/tasks.json
+
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Exportar Token desde .env",
+        "type": "shell",
+        "command": "export $(cat ${workspaceFolder}/.env | xargs) && echo $INFLUX_TOKEN",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }
