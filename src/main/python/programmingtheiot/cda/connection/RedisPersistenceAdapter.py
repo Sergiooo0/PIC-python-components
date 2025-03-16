@@ -112,4 +112,13 @@ class RedisPersistenceAdapter():
             logging.info("Redis client is not connected. Ignoring get request.")
             return None
 
+
+if __name__ == "__main__":
+    redis = RedisPersistenceAdapter()
+    redis.connectClient()
+    redis.storeData(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, SensorData("test", ConfigConst.TEMP_SENSOR_TYPE, 0))
+    data = redis.getData(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE)
+    print("----------------prueba---------------")
+    print(data)
+    redis.disconnectClient()
         

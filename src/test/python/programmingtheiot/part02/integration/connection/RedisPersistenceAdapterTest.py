@@ -4,6 +4,7 @@ import unittest
 from programmingtheiot.cda.connection.RedisPersistenceAdapter import RedisPersistenceAdapter
 from programmingtheiot.data.SensorData import SensorData
 import programmingtheiot.common.ConfigConst as ConfigConst
+from programmingtheiot.common.ResourceNameEnum import ResourceNameEnum
 
 
 class RedisPersistenceAdapterTest(unittest.TestCase):
@@ -34,7 +35,7 @@ class RedisPersistenceAdapterTest(unittest.TestCase):
         data = SensorData()
         data.setValue(1.0)
         
-        resource = ConfigConst.TEMP_SENSOR_NAME
+        resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE
         self.assertTrue(self.redis.storeData(resource = resource, data = data))
         
         self.redis.disconnectClient()
@@ -44,7 +45,7 @@ class RedisPersistenceAdapterTest(unittest.TestCase):
         self.redis.connectClient()
         self.assertTrue(self.redis.is_connected)
         
-        resource = ConfigConst.TEMP_SENSOR_NAME
+        resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE
         data = self.redis.getData(resource)
         
         self.assertIsNotNone(data)
