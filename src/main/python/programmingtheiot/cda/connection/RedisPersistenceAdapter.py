@@ -76,12 +76,12 @@ class RedisPersistenceAdapter():
             logging.info("Redis client is not connected. Ignoring disconnect request.")
             return True
         
-    def storeData(self, resource: str, data:SensorData) -> bool:
+    def storeData(self, resource: ResourceNameEnum, data:SensorData) -> bool:
         if self.is_connected:
             try:
                 jsonData = self.dataUtil.sensorDataToJson(data)
-                self.client.set(resource, jsonData)
-                logging.info(f"Stored data from {resource} : {jsonData} in Redis")
+                self.client.set(resource.value, jsonData)
+                logging.info(f"Stored data from {data.getName()} : {jsonData} in Redis topic: {resource.value}")
                 return True
             except Exception as e:
                 logging.error("Failed to store data in Redis. Exception: " + str(e))
@@ -90,7 +90,7 @@ class RedisPersistenceAdapter():
             logging.info("Redis client is not connected. Ignoring store request.")
             return False
         
-    def getData(self, resource: str) -> SensorData:
+    def getData(self, resource: ResourceNameEnum) -> SensorData:
         """
         Retrieves the data from the Redis server.
         (An extra function to test redis)
@@ -100,9 +100,9 @@ class RedisPersistenceAdapter():
         """
         if self.is_connected:
             try:
-                jsonData = self.client.get(resource)
+                jsonData = self.client.get(resource.value)
                 jsonData = jsonData.decode('utf-8')
-                logging.info(f"Retrieved data from {resource} : {jsonData} from Redis")
+                logging.info(f"Retrieved data from {resource.value} : {jsonData} from Redis")
                 sd = self.dataUtil.jsonToSensorData(jsonData)
                 return sd
             except Exception as e:
@@ -112,12 +112,4 @@ class RedisPersistenceAdapter():
             logging.info("Redis client is not connected. Ignoring get request.")
             return None
 
-if __name__ == "__main__":
-    redis = RedisPersistenceAdapter()
-    redis.connectClient()
-    sd = SensorData()
-    sd.setValue(100)
-    sd.setName(ConfigConst.HUMIDITY_SENSOR_NAME)
-    print(redis.storeData(ConfigConst.HUMIDITY_SENSOR_NAME, sd))
-    print(redis.getData(ConfigConst.HUMIDITY_SENSOR_NAME))
         

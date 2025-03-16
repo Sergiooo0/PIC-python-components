@@ -196,7 +196,7 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		if data:
 			logging.debug("Incoming sensor data received (from sensor manager): " + str(data))
-			resource = data.getName()
+			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE
 			self._handleSensorDataAnalysis(resource, data)
 			return True
 		else:
@@ -263,7 +263,7 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		pass
 		
-	def _handleSensorDataAnalysis(self, resource: str, data: SensorData):
+	def _handleSensorDataAnalysis(self, resource: ResourceNameEnum, data: SensorData):
 		"""
 		Call this from handleSensorMessage() to determine if there's
 		any action to take on the message. Steps to take:

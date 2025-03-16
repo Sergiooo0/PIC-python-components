@@ -89,8 +89,8 @@ def main():
 			sleep(5)
 	else:
 	
-		# run for 65 seconds - this can be changed as needed
-		sleep(65)
+		# run for 4 minutos - this can be changed as needed
+		sleep(240)
 		
 		# optionally stop the app - this can be removed if needed
 		cda.stopApp(0)
@@ -98,7 +98,6 @@ def main():
 if __name__ == '__main__':
 	"""
 	Attribute definition for when invoking as app via command line
-	
 	"""
 	main()
 	
