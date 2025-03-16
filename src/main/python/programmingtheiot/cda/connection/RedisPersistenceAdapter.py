@@ -6,6 +6,7 @@ from programmingtheiot.common.ConfigUtil import ConfigUtil
 
 from programmingtheiot.common.ResourceNameEnum import ResourceNameEnum
 from programmingtheiot.data.SensorData import SensorData
+from programmingtheiot.data.DataUtil import DataUtil
 
 logging.basicConfig(format = '%(asctime)s:%(name)s:%(levelname)s:%(message)s', level = logging.DEBUG)
 
@@ -28,6 +29,7 @@ class RedisPersistenceAdapter():
 
         self.client = None
         self.is_connected = False
+        self.dataUtil = DataUtil()
 
     def connectClient(self) -> bool:
         """
@@ -77,8 +79,9 @@ class RedisPersistenceAdapter():
     def storeData(self, resource: str, data:SensorData) -> bool:
         if self.is_connected:
             try:
-                self.client.set(resource, data.getValue())
-                logging.info(f"Stored data from {resource} : {data.getValue()} in Redis")
+                jsonData = self.dataUtil.sensorDataToJson(data)
+                self.client.set(resource, jsonData)
+                logging.info(f"Stored data from {resource} : {jsonData} in Redis")
                 return True
             except Exception as e:
                 logging.error("Failed to store data in Redis. Exception: " + str(e))
@@ -97,11 +100,10 @@ class RedisPersistenceAdapter():
         """
         if self.is_connected:
             try:
-                value = self.client.get(resource)
-                logging.info(f"Retrieved data from {resource} : {value} from Redis")
-                sd = SensorData()
-                sd.setValue(float(value))
-                sd.setName(resource)
+                jsonData = self.client.get(resource)
+                jsonData = jsonData.decode('utf-8')
+                logging.info(f"Retrieved data from {resource} : {jsonData} from Redis")
+                sd = self.dataUtil.jsonToSensorData(jsonData)
                 return sd
             except Exception as e:
                 logging.error("Failed to retrieve data from Redis. Exception: " + str(e))
@@ -113,5 +115,9 @@ class RedisPersistenceAdapter():
 if __name__ == "__main__":
     redis = RedisPersistenceAdapter()
     redis.connectClient()
+    sd = SensorData()
+    sd.setValue(100)
+    sd.setName(ConfigConst.HUMIDITY_SENSOR_NAME)
+    print(redis.storeData(ConfigConst.HUMIDITY_SENSOR_NAME, sd))
     print(redis.getData(ConfigConst.HUMIDITY_SENSOR_NAME))
         
