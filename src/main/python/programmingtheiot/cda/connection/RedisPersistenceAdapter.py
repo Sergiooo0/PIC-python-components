@@ -80,7 +80,7 @@ class RedisPersistenceAdapter():
         if self.is_connected:
             try:
                 jsonData = self.dataUtil.sensorDataToJson(data)
-                self.client.set(resource.value, jsonData)
+                self.client.publish(resource.value, jsonData)
                 logging.info(f"Stored data from {data.getName()} : {jsonData} in Redis topic: {resource.value}")
                 return True
             except Exception as e:
