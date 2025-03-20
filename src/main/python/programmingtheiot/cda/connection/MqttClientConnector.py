@@ -98,7 +98,16 @@ class MqttClientConnector(IPubSubClient):
 			return False
 		
 	def disconnectClient(self) -> bool:
-		pass
+		if self.mqsttClient.is_connected():
+			logging.info('Disconnecting MQTT client from broker: ' + self.host)
+			self.mqttClient.loop_stop()
+			self.mqttClient.disconnect()
+
+			return True
+		else:
+			logging.warning('MQTT client already disconnected. Ignoring.')
+
+			return False
 		
 	def onConnect(self, client, userdata, flags, rc):
 		pass
