@@ -36,10 +36,66 @@ class MqttClientConnector(IPubSubClient):
 		the same clientID continuously attempts to re-connect, causing the broker to
 		disconnect the previous instance.
 		"""
-		pass
+		self.config = ConfigUtil()
+		self.dataMsgListener = None
+		self.host = self.config.getProperty(
+			ConfigConst.MQTT_GATEWAY_SERVICE, 
+			ConfigConst.HOST_KEY,
+			ConfigConst.DEFAULT_HOST
+		)
+		self.port =self.config.getInteger(
+			ConfigConst.MQTT_GATEWAY_SERVICE, 
+			ConfigConst.PORT_KEY, 
+			ConfigConst.DEFAULT_MQTT_PORT)
+		
+		self.keepAlive = self.config.getInteger(
+			ConfigConst.MQTT_GATEWAY_SERVICE, 
+			ConfigConst.KEEP_ALIVE_KEY, 
+			ConfigConst.DEFAULT_KEEP_ALIVE
+			)
+		
+		self.defaultQoS = self.config.getInteger(
+			ConfigConst.MQTT_GATEWAY_SERVICE, 
+			ConfigConst.DEFAULT_QOS_KEY, 
+			ConfigConst.DEFAULT_QOS
+		)
 
-	def connectClient(self) -> bool:
-		pass
+		self.mqttClient = None
+
+		if clientID is None:
+			self.clientID = self.config.getProperty(
+				ConfigConst.CONSTRAINED_DEVICE, 
+				ConfigConst.DEVICE_LOCATION_ID_KEY
+			)
+		else:
+			self.clientID = clientID
+		
+		logging.info('\tMQTT Client ID:   ' + self.clientID)
+		logging.info('\tMQTT Broker Host: ' + self.host)
+		logging.info('\tMQTT Broker Port: ' + str(self.port))
+		logging.info('\tMQTT Keep Alive:  ' + str(self.keepAlive))
+
+	def connectClient(self, cleanSession: bool = True) -> bool:
+		if not self.mqttClient:
+			self.mqttClient = mqttClient.Client(
+				client_id = self.clientID, clean_session = cleanSession)
+
+			self.mqttClient.on_connect = self.onConnect
+			self.mqttClient.on_disconnect = self.onDisconnect
+			self.mqttClient.on_message = self.onMessage
+			self.mqttClient.on_publish = self.onPublish
+			self.mqttClient.on_subscribe = self.onSubscribe
+
+		if not self.mqttClient.is_connected():
+			logging.info('MQTT client connecting to broker at host: ' + self.host)
+			self.mqttClient.connect(self.host, self.port, self.keepAlive)
+			self.mqttClient.loop_start()
+
+			return True
+		else:
+			logging.warning('MQTT client is already connected. Ignoring connect request.')
+
+			return False
 		
 	def disconnectClient(self) -> bool:
 		pass
@@ -74,14 +130,21 @@ class MqttClientConnector(IPubSubClient):
 		"""
 		pass
 	
-	def publishMessage(self, resource: ResourceNameEnum = None, msg: str = None, qos: int = ConfigConst.DEFAULT_QOS):
-		pass
+	def publishMessage(self, resource: ResourceNameEnum = None, msg: str = None, qos: int = ConfigConst.DEFAULT_QOS) -> bool:
+		logging.info('Publishing message to topic: ' + str(resource))
+		return False
 	
-	def subscribeToTopic(self, resource: ResourceNameEnum = None, callback = None, qos: int = ConfigConst.DEFAULT_QOS):
-		pass
+	def subscribeToTopic(self, resource: ResourceNameEnum = None, callback = None, qos: int = ConfigConst.DEFAULT_QOS) -> bool:
+		logging.info('Subscribing to topic: ' + str(resource))
+		return False
 	
 	def unsubscribeFromTopic(self, resource: ResourceNameEnum = None):
-		pass
+		logging.info("Unsuscribing from topic: " + str(resource))
+		return False
 
 	def setDataMessageListener(self, listener: IDataMessageListener = None) -> bool:
-		pass
+		if listener:
+			self.dataMessageListener = listener
+			return True
+		else:
+			return False
