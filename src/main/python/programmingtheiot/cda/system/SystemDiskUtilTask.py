@@ -13,7 +13,7 @@ class SystemDiskUtilTask(BaseSystemUtilTask):
 			typeID = ConfigConst.DISK_UTIL_TYPE)
 	
 	def getTelemetryValue(self) -> float:
-		return psutil.disk_usage("/home/sergio/Escritorio/PIC/PIC-python-components/src")[3]
+		return psutil.disk_usage("/")[3]
 	
 if __name__ == "__main__":
 	disk = SystemDiskUtilTask()
