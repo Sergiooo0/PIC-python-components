@@ -80,6 +80,8 @@ class RedisPersistenceAdapter():
         if self.is_connected:
             try:
                 jsonData = self.dataUtil.sensorDataToJson(data)
+                # Esta línea es para que funcione un test unitario, a la hora de la integración no hace falta.
+                self.client.set(resource.value, jsonData) #Almacena persistentemente un único valor en la clave
                 self.client.publish(resource.value, jsonData)
                 logging.info(f"Stored data from {data.getName()} : {jsonData} in Redis topic: {resource.value}")
                 return True
