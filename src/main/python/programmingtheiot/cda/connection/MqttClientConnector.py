@@ -199,6 +199,16 @@ class MqttClientConnector(IPubSubClient):
 		self.mqttClient.unsubscribe(resource.value)
 
 		return True
+	
+	def pingBroker(self) -> bool:
+		# check if client is connected
+		if self.mqttClient.is_connected():
+			self.mqttClient._send_pingreq()
+			logging.info('PINGREQ sent to broker: ' + self.host)
+			return True
+		else:
+			logging.warning('MQTT client not connected. Cannot send PINGREQ.')
+			return False
 
 	def setDataMessageListener(self, listener: IDataMessageListener = None) -> bool:
 		if listener:
