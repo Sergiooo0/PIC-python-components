@@ -15,6 +15,7 @@ frozenlist==1.5.0
 idna==3.10
 influxdb-client==1.48.0
 kiwisolver==1.4.8
+LinkHeader==0.4.3
 matplotlib==3.10.0
 multidict==6.1.0
 numpy==2.2.2
