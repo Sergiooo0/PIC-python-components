@@ -120,9 +120,34 @@ class CoapClientConnector(IRequestResponseClient):
 			logging.warning("Can't test GET - no path or path list provided.")
 
 
-	def sendPostRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, payload: str = None, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("Sending POST request to resource: " + str(resource) + " with name: " + str(name) + " and payload: " + str(payload))
-		return False
+	def sendPostRequest(
+		self,
+		resource: ResourceNameEnum = None,
+		name: str = None,
+		enableCON: bool = False,
+		payload: str = None,
+		timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
+	) -> bool:
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
+
+			logging.info("Issuing POST with path: " + resourcePath)
+
+			request = self.coapClient.mk_request(defines.Codes.POST, path=resourcePath)
+			request.token = generate_random_token(2)
+			request.payload = payload
+
+			if not enableCON:
+				request.type = defines.Types["NON"]
+
+			self.coapClient.send_request(
+				request=request,
+				callback=self._onPostResponse,
+				timeout=timeout
+			)
+		else:
+			logging.warning("Can't test POST - no path or path list provided.")
+
 
 	def sendPutRequest(
     self,
@@ -233,4 +258,9 @@ class CoapClientConnector(IRequestResponseClient):
 
 		logging.info('PUT response received: %s', response.payload)
 
+	def _onPostResponse(self, response):
+		if not response:
+			logging.warning('POST response invalid. Ignoring.')
+			return
 
+		logging.info('POST response received: %s', response.payload)
