@@ -59,6 +59,11 @@ class DeviceDataManager(IDataMessageListener):
 			section = ConfigConst.CONSTRAINED_DEVICE,
 			key = ConfigConst.ENABLE_MQTT_CLIENT_KEY)
 		
+		self.enableCoapClient = self.configUtil.getBoolean(
+			section=ConfigConst.CONSTRAINED_DEVICE,
+			key=ConfigConst.ENABLE_COAP_CLIENT_KEY
+		)
+		
 		self.sysPerfMgr = None
 		self.sensorAdapterMgr = None
 		self.actuatorAdapterMgr = None
@@ -77,6 +82,9 @@ class DeviceDataManager(IDataMessageListener):
 			logging.info("MQTT client is enabled.")
 			self.mqttClient = MqttClientConnector()
 			self.mqttClient.setDataMessageListener(self)
+		
+		if self.enableCoapClient:
+			self.coapClient = CoapClientConnector(dataMsgListener=self)
 
 		if self.enableSystemPerf:
 			self.sysPerfMgr = SystemPerformanceManager()
