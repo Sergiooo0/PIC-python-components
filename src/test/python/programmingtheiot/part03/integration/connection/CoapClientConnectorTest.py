@@ -50,7 +50,9 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 	@classmethod
 	def tearDownClass(self):
-		pass
+		logging.info("Stopping CoAP client...")
+		self.coapClient.stop()
+
 	
 	def setUp(self):
 		pass

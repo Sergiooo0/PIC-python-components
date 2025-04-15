@@ -69,7 +69,17 @@ class CoapClientConnector(IRequestResponseClient):
 
 		except socket.gaierror:
 			logging.info("Failed to resolve host: " + self.host)
-		
+
+	def stop(self):
+		logging.info("Stopping CoAP client...")
+		if self.coapClient:
+			try:
+				self.coapClient.stop()
+				logging.info("CoAP client stopped.")
+			except Exception as e:
+				logging.warning("Exception caught while stopping client: %s", str(e))
+			self.coapClient = None
+
 	def sendDiscoveryRequest(self, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
 		logging.info("Discovering remote resources...")
 
