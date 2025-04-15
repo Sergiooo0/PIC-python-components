@@ -114,9 +114,34 @@ class CoapClientConnector(IRequestResponseClient):
 		logging.info("Sending POST request to resource: " + str(resource) + " with name: " + str(name) + " and payload: " + str(payload))
 		return False
 
-	def sendPutRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, payload: str = None, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("Sending PUT request to resource: " + str(resource) + " with name: " + str(name) + " and payload: " + str(payload))
-		return False
+	def sendPutRequest(
+    self,
+    resource: ResourceNameEnum = None,
+    name: str = None,
+    enableCON: bool = False,
+    payload: str = None,
+    timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
+	) -> bool:
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
+
+			logging.info("Issuing PUT with path: " + resourcePath)
+
+			request = self.coapClient.mk_request(defines.Codes.PUT, path=resourcePath)
+			request.token = generate_random_token(2)
+			request.payload = payload
+
+			if not enableCON:
+				request.type = defines.Types["NON"]
+
+			self.coapClient.send_request(
+				request=request,
+				callback=self._onPutResponse,
+				timeout=timeout
+			)
+		else:
+			logging.warning("Can't test PUT - no path or path list provided.")
+
 
 	def setDataMessageListener(self, listener: IDataMessageListener = None) -> bool:
 		logging.info("Setting data message listener: " + str(listener))
@@ -190,4 +215,12 @@ class CoapClientConnector(IRequestResponseClient):
 				logging.info("Response data received. Payload: %s", jsonData)
 		else:
 			logging.info("Response data received. Payload: %s", jsonData)
+
+	def _onPutResponse(self, response):
+		if not response:
+			logging.warning('PUT response invalid. Ignoring.')
+			return
+
+		logging.info('PUT response received: %s', response.payload)
+
 
