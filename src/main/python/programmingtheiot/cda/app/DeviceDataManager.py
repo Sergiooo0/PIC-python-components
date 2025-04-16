@@ -151,7 +151,9 @@ class DeviceDataManager(IDataMessageListener):
 		logging.info(f"Actuador data: {str(data)}")
 		if data:
 			logging.info("Processing actuator command message.")
-			return self.actuatorAdapterMgr.sendActuatorCommand(data)
+			if self.actuatorAdapterMgr:
+				return self.actuatorAdapterMgr.sendActuatorCommand(data)
+			return None
 		else: 
 			logging.warning("Incoming atuator command is invalid (null). Ignoring")
 			return None
@@ -202,22 +204,19 @@ class DeviceDataManager(IDataMessageListener):
 			logging.warning("Incoming message is invalid (null). Ignoring.")
 			return False
 	
-	def handleSensorMessage(self, data: SensorData) -> bool:
-		"""
-		This callback method will be invoked by the sensor manager that just processed
-		a new sensor reading, which creates a new SensorData instance that will be
-		passed to this method.
-		
-		@param data The incoming SensorData message.
-		@return boolean
-		"""
+	
+	def handleSensorMessage(self, data: SensorData = None) -> bool:
 		if data:
-			logging.debug("Incoming sensor data received (from sensor manager): " + str(data))
-			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE
-			self._handleSensorDataAnalysis(resource, data)
+			logging.info("Incoming sensor data received (from sensor manager): " + str(data))
+
+			self._handleSensorDataAnalysis(resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, data = data)
+			jsonData = DataUtil().sensorDataToJson(data = data)
+			self._handleUpstreamTransmission(resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, msg = jsonData)
+
 			return True
 		else:
 			logging.warning("Incoming sensor data is invalid (null). Ignoring.")
+
 			return False
 	
 	def handleSystemPerformanceMessage(self, data: SystemPerformanceData) -> bool:
@@ -318,11 +317,25 @@ class DeviceDataManager(IDataMessageListener):
 			self.redisClient.storeData(resource, data)
 
 		
-	def _handleUpstreamTransmission(self, resourceName: ResourceNameEnum, msg: str):
+	def _handleUpstreamTransmission(self, resource: ResourceNameEnum, msg: str):
 		"""
 		Call this from handleActuatorCommandResponse(), handlesensorMessage(), and handleSystemPerformanceMessage()
 		to determine if the message should be sent upstream. Steps to take:
 		1) Check connection: Is there a client connection configured (and valid) to a remote MQTT or CoAP server?
 		2) Act on msg: If # 1 is true, send message upstream using one (or both) client connections.
 		"""
-		pass
+		logging.info("Upstream transmission invoked. Checking comm's integration.")
+
+		#Make sure don't have enabled both MQTT and CoAP clients in PiotConfig.props
+		if self.mqttClient:
+			if self.mqttClient.publishMessage(resource = resource, msg = msg):
+				logging.debug("Published incoming data to resource (MQTT): %s", str(resource))
+			else:
+				logging.warning("Failed to publish incoming data to resource (MQTT): %s", str(resource))
+
+		if self.coapClient:
+			if self.coapClient.sendPutRequest(resource = resource, payload = msg):
+				logging.debug("Put incoming message data to resource (CoAP): %s", str(resource))
+			else:
+				logging.warning("Failed to put incoming message data to resource (CoAP): %s", str(resource))
+	

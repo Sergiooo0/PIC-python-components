@@ -57,6 +57,10 @@ class DeviceDataManagerWithCommsTest(unittest.TestCase):
 		actuatorData.setStateData("This is a test.")
 		actuatorData.setValue(52)
 		
+		print()
+		print()
+		print()
+		print("/Testing actuator data callback...")
 		ddMgr.handleActuatorCommandMessage(actuatorData)
 		
 		sleep(10)
