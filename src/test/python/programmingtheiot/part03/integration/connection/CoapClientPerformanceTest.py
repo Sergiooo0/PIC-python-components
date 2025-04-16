@@ -29,7 +29,7 @@ class CoapClientPerformanceTest(unittest.TestCase):
 	environment.
 	"""
 	NS_IN_MILLIS = 1000000
-	MAX_TEST_RUNS = 10000
+	MAX_TEST_RUNS = 1000
 	
 	@classmethod
 	def setUpClass(self):
@@ -41,7 +41,7 @@ class CoapClientPerformanceTest(unittest.TestCase):
 	def tearDown(self):
 		self.coapClient.disconnectClient()
 					
-	@unittest.skip("Ignore for now.")
+	#@unittest.skip("Ignore for now.")
 	def testGetRequestCon(self):
 		"""
 		Comment the annotation to perf test CON GET
@@ -49,6 +49,8 @@ class CoapClientPerformanceTest(unittest.TestCase):
 		print("Testing GET - CON")
 		
 		self._execTestGet(self.MAX_TEST_RUNS, True)
+
+		print("\n\n\n")
 
 	@unittest.skip("Ignore for now.")
 	def testGetRequestNon(self):

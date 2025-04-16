@@ -60,6 +60,14 @@ class MqttClientConnector(IPubSubClient):
 			ConfigConst.DEFAULT_QOS
 		)
 
+		self.enableEncryption = \
+			self.config.getBoolean( \
+				ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.ENABLE_CRYPT_KEY)
+
+		self.pemFileName = \
+			self.config.getProperty( \
+				ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.CERT_FILE_KEY)
+
 		self.mqttClient = None
 
 		if clientID is None:
@@ -77,6 +85,21 @@ class MqttClientConnector(IPubSubClient):
 		if not self.mqttClient:
 			self.mqttClient = mqttClient.Client(
 				client_id = self.clientID, clean_session = cleanSession)
+			
+			try:
+				if self.enableEncryption:
+					logging.info("Enabling TLS encryption...")
+
+					self.port = self.config.getInteger(
+						ConfigConst.MQTT_GATEWAY_SERVICE, 
+						ConfigConst.SECURE_PORT_KEY, 
+						ConfigConst.DEFAULT_MQTT_SECURE_PORT
+						)
+
+					# see https://docs.python.org/3/library/ssl.html for more options.
+					self.mqttClient.tls_set(self.pemFileName, tls_version = ssl.PROTOCOL_TLS_CLIENT)
+			except:
+				logging.warning("Failed to enable TLS encryption. Using unencrypted connection.")
 
 			self.mqttClient.on_connect = self.onConnect
 			self.mqttClient.on_disconnect = self.onDisconnect
