@@ -83,7 +83,7 @@ class RedisPersistenceAdapter():
                 # Esta línea es para que funcione un test unitario, a la hora de la integración no hace falta.
                 self.client.set(resource.value, jsonData) #Almacena persistentemente un único valor en la clave
                 self.client.publish(resource.value, jsonData)
-                logging.info(f"Stored data from {data.getName()} : {jsonData} in Redis topic: {resource.value}")
+                #logging.info(f"Stored data from {data.getName()} : {jsonData} in Redis topic: {resource.value}")
                 return True
             except Exception as e:
                 logging.error("Failed to store data in Redis. Exception: " + str(e))

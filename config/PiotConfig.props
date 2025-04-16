@@ -53,7 +53,7 @@ pollCycleSecs    = 5
 testGdaDataPath  = /tmp/gda-data
 testCdaDataPath  = /tmp/cda-data
 testEmptyApp     = False
-runForever       = False
+runForever       = True
 
 # configurable limits for actuator triggers
 handleTempChangeOnDevice = True
