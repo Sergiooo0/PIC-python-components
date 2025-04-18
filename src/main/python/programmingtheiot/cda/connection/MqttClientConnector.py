@@ -38,7 +38,7 @@ class MqttClientConnector(IPubSubClient):
 		disconnect the previous instance.
 		"""
 		self.config = ConfigUtil()
-		self.dataMsgListener = None
+		self.dataMessageListener = None
 		self.host = self.config.getProperty(
 			ConfigConst.MQTT_GATEWAY_SERVICE, 
 			ConfigConst.HOST_KEY,
@@ -182,12 +182,13 @@ class MqttClientConnector(IPubSubClient):
 		"""
 		logging.info('[Callback] Actuator command message received. Topic: %s.', msg.topic)
 
-		if self.dataMsgListener:
+		if self.dataMessageListener:
 			try:
 				# assumes all data is encoded using UTF-8 (between GDA and CDA)
 				actuatorData = DataUtil().jsonToActuatorData(msg.payload.decode('utf-8'))
+				#logging.info('Actuator command message payload converted to ActuatorData: ' + str(actuatorData))
 
-				self.dataMsgListener.handleActuatorCommandMessage(actuatorData)
+				self.dataMessageListener.handleActuatorCommandMessage(actuatorData)
 			except:
 				logging.exception("Failed to convert incoming actuation command payload to ActuatorData: ")
 		

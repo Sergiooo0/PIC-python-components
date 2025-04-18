@@ -148,7 +148,7 @@ class DeviceDataManager(IDataMessageListener):
 		@param data The incoming ActuatorData command message.
 		@return boolean
 		"""
-		logging.info(f"Actuador data: {str(data)}")
+		logging.info(f"Handling actuador data: {str(data)}")
 		if data:
 			logging.info("Processing actuator command message.")
 			if self.actuatorAdapterMgr:
@@ -311,6 +311,7 @@ class DeviceDataManager(IDataMessageListener):
 			else:
 				ad.setCommand(ConfigConst.COMMAND_OFF)
 
+			ad.setName(ConfigConst.HVAC_ACTUATOR_NAME)
 			self.handleActuatorCommandMessage(ad)
 		
 		if self.redisClient:

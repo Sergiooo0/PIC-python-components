@@ -57,10 +57,10 @@ class BaseActuatorSimTask():
 			curVal = data.getValue()
 
 			if curCommand == self.lastKnownCommand and curVal == self.lastKnownValue:
-				logging.debug(f"Actuator command and value have not changed. Ignoring: {str(curCommand)} / {str(curVal)}")
+				logging.debug(f"Actuator command and value of {str(data.name)} have not changed. Ignoring: {str(curCommand)} / {str(curVal)}")
 				return None
 			
-			logging.debug(f"Actuator command and/or value have changed. Updating: {str(curCommand)} / {str(curVal)}")
+			logging.debug(f"Actuator command and/or value of {str(data.name)} have changed. Updating: {str(curCommand)} / {str(curVal)}")
 
 			if curCommand == ConfigConst.COMMAND_ON:
 				logging.info("Activating actuator")
