@@ -25,8 +25,8 @@ enableCrypt    = False
 # CoAP client configuration information
 #
 [Coap.GatewayService]
-credFile       = ./cred/PiotCoapCred.props
-certFile       = ./cert/PiotCoapLocalCertFile.pem
+credFile       = /home/sergio/Escritorio/PIC/PIC-python-components/UbidotsCloudCred.props
+certFile       = /home/sergio/Escritorio/PIC/PIC-python-components/UbidotsCloudCert.pem
 host           = localhost
 port           = 5683
 securePort     = 5684

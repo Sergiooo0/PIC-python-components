@@ -3,3 +3,6 @@
 **/cred
 **/venv
 .venv
+.env
+UbidotsCloudCred.props
+UbidotsCloudCert.pem
