@@ -77,6 +77,9 @@ class CoapClientConnectorTest(unittest.TestCase):
 		self.coapClient.sendGetRequest( \
 			resource = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, enableCON = True, timeout = 5)
 		
+		# I added sleeps to give wireshark time to listen the messages
+		sleep(0.1)
+		
 	#@unittest.skip("Ignore for now.")
 	def testGetActuatorCommandNon(self):
 		"""
@@ -84,6 +87,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		"""
 		self.coapClient.sendGetRequest( \
 			resource = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE, enableCON = False, timeout = 5)
+		sleep(0.1)
 		
 	#@unittest.skip("Ignore for now.")
 	def testDeleteSensorMessageCon(self):
@@ -92,6 +96,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		"""
 		self.coapClient.sendDeleteRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = True, timeout = 5)
+		sleep(0.1)
 	
 	#@unittest.skip("Ignore for now.")
 	def testDeleteSensorMessageNon(self):
@@ -100,6 +105,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		"""
 		self.coapClient.sendDeleteRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = False, timeout = 5)
+		sleep(0.1)
 
 	#@unittest.skip("Ignore for now.")
 	def testPostSensorMessageCon(self):
@@ -111,6 +117,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 		self.coapClient.sendPostRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = True, payload = jsonData, timeout = 5)
+		sleep(0.1)
 	
 	#@unittest.skip("Ignore for now.")
 	def testPostSensorMessageNon(self):
@@ -122,6 +129,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 		self.coapClient.sendPostRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = False, payload = jsonData, timeout = 5)
+		sleep(0.1)
 	
 	#@unittest.skip("Ignore for now.")
 	def testPutSensorMessageCon(self):
@@ -133,6 +141,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 		self.coapClient.sendPutRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = True, payload = jsonData, timeout = 5)
+		sleep(0.1)
 	
 	#@unittest.skip("Ignore for now.")
 	def testPutSensorMessageNon(self):
@@ -144,6 +153,7 @@ class CoapClientConnectorTest(unittest.TestCase):
 		
 		self.coapClient.sendPutRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = False, payload = jsonData, timeout = 5)
+		sleep(0.1)
 
 	#@unittest.skip("Ignore for now.")
 	def testActuatorCommandObserve(self):
