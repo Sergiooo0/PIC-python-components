@@ -37,7 +37,8 @@ class LedDisplayEmulatorTask(BaseActuatorSimTask):
 
 	def _activateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
 		if self.sh.screen:
-			self.sh.screen.scroll_text(stateData, size = 8)
+			msg = self.getSimpleName() + ' ON' 
+			self.sh.screen.scroll_text(msg, size = 8)
 			return 0
 		else:
 			logging.warning("No SenseHAT LED screen instance to write.")
