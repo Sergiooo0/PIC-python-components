@@ -38,6 +38,7 @@ enableCrypt    = False
 #
 [ConstrainedDevice]
 deviceLocationID = constraineddevice001
+deviceStandardLocationID = constraineddevice00
 enableEmulator   = True
 enableSenseHAT   = False
 enableMqttClient = True

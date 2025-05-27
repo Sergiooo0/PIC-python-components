@@ -10,6 +10,7 @@
 # Programming the Internet of Things project.
 # 
 
+import argparse
 import logging
 
 from time import sleep
@@ -29,7 +30,7 @@ class ConstrainedDeviceApp():
 	
 	"""
 	
-	def __init__(self):
+	def __init__(self, device_id: int = None):
 		"""
 		Initialization of class.
 		
@@ -37,8 +38,19 @@ class ConstrainedDeviceApp():
 		"""
 		logging.info("Initializing CDA...")
 		
-		# TODO: implementation here
-		self.sysPerfMgr = SystemPerformanceManager()
+		self.device_id = device_id
+		if self.device_id is not None:
+			self.location_id = ConfigUtil().getProperty(
+				ConfigConst.CONSTRAINED_DEVICE, 
+				ConfigConst.DEVICE_STANDARD_LOCATION_ID_KEY
+			)
+			self.location_id += str(self.device_id)
+			ConfigUtil().setLocationID(self.location_id)
+			logging.info(f"Device location ID set to: {self.location_id}")
+		else:
+			logging.info("Initializing CDA with no specific ID.")
+
+		#self.sysPerfMgr = SystemPerformanceManager()
 		self.dataMgr = DeviceDataManager()
 
 	def startApp(self):
@@ -48,7 +60,7 @@ class ConstrainedDeviceApp():
 		"""
 		logging.info("Starting CDA...")
 
-		self.sysPerfMgr.startManager()
+		#self.sysPerfMgr.startManager() #deviceDataManager already starts the system performance manager
 		self.dataMgr.startManager()
 		
 		logging.info("CDA started.")
@@ -60,7 +72,7 @@ class ConstrainedDeviceApp():
 		"""
 		logging.info("CDA stopping...")
 		
-		self.sysPerfMgr.stopManager()
+		#self.sysPerfMgr.stopManager()
 		self.dataMgr.stopManager()
 		
 		logging.info("CDA stopped with exit code %s.", str(code))
@@ -73,14 +85,24 @@ class ConstrainedDeviceApp():
 		"""
 		logging.info("Parsing command line args...")
 
+def parseArgs():
+	"""
+	Parse command line args and return them.
+	"""
+	parser = argparse.ArgumentParser(description='Constrained Device App')
+	parser.add_argument('--id', type=int, help='Optional device ID (e.g., 1, 2, 3...)')
+	return parser.parse_args()
 
 def main():
 	"""
 	Main function definition for running client as application.
 	
-	Current implementation runs for 35 seconds then exits.
+	Current implementation runs forever.
 	"""
-	cda = ConstrainedDeviceApp()
+	args = parseArgs()
+	device_id = args.id if args.id is not None else None
+
+	cda = ConstrainedDeviceApp(device_id=device_id)
 	cda.startApp()
 
 	runForever = ConfigUtil().getBoolean(ConfigConst.CONSTRAINED_DEVICE, ConfigConst.RUN_FOREVER_KEY)

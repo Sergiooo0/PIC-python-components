@@ -42,6 +42,11 @@ class ConfigUtil(metaclass = Singleton):
 			
 		self._loadConfig()
 		logging.info("Created instance of ConfigUtil: " + str(self))
+		self.locationID = None
+		self.locationID = ConfigUtil.getProperty(
+			ConfigConst.CONSTRAINED_DEVICE, 
+			ConfigConst.DEVICE_LOCATION_ID_KEY 
+		)
 	
 	#
 	# public methods
@@ -110,6 +115,10 @@ class ConfigUtil(metaclass = Singleton):
 		@param forceReload Defaults to false; if true will reload the config.
 		@return The property associated with 'key' in 'section'.
 		"""
+		if (key == ConfigConst.DEVICE_LOCATION_ID_KEY and section == ConfigConst.CONSTRAINED_DEVICE and self.locationID is not None):
+			# if the location ID is already set, return it
+			return self.locationID
+		
 		return self._getConfig(forceReload).get(section, key, fallback = defaultVal)
 	
 	def getBoolean(self, section: str, key: str, forceReload: bool = False):
@@ -175,6 +184,20 @@ class ConfigUtil(metaclass = Singleton):
 		"""
 		return self.isLoaded
 	
+	def setLocationID(self, locationID: str):
+		"""
+		Sets the location ID for this instance of ConfigUtil.
+		All classes that use this instance will
+		automatically use the new location ID.
+		
+		@param locationID The location ID to set.
+		"""
+		if (locationID is not None and locationID != ConfigConst.NOT_SET):
+			self.locationID = locationID
+			logging.info("Set location ID: %s", self.locationID)
+		else:
+			logging.warning("Invalid location ID specified: %s", str(locationID))
+
 	#
 	# private methods
 	#
