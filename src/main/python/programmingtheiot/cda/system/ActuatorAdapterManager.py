@@ -52,7 +52,8 @@ class ActuatorAdapterManager(object):
 		self.humidifierActuator = None
 		self.hvacActuator = None
 		self.ledDisplayActuator = None
-
+		self.vibrationActuator = None
+		
 		self._initEnvironmentalActuationTask()
 
 	def _initEnvironmentalActuationTask(self):
@@ -77,6 +78,11 @@ class ActuatorAdapterManager(object):
 			leClazz=getattr(leDisplayModule,'LedDisplayEmulatorTask')
 			self.ledDisplayActuator=leClazz()
 
+			# create the vibration actuator emulator
+			viModule=import_module('programmingtheiot.cda.emulated.VibrationActuatorTask','VibrationActuatorTask')
+			viClazz=getattr(viModule,'VibrationActuatorTask')
+			self.vibrationActuator=viClazz()
+
 	def sendActuatorCommand(self, data: ActuatorData) -> ActuatorData:
 		if data and not data.isResponseFlagEnabled():
 			# first check if the actuation event is destined for this device
@@ -93,6 +99,8 @@ class ActuatorAdapterManager(object):
 					responseData = self.hvacActuator.updateActuator(data)
 				elif aType == ConfigConst.LED_DISPLAY_ACTUATOR_TYPE and self.ledDisplayActuator:
 					responseData = self.ledDisplayActuator.updateActuator(data)
+				elif aType == ConfigConst.VIBRATION_ACTUATOR_TYPE and self.vibrationActuator:
+					responseData = self.vibrationActuator.updateActuator(data)
 				else:
 					logging.warning("No valid actuator type. Ignoring actuation for type: %s", data.getTypeID())
 
