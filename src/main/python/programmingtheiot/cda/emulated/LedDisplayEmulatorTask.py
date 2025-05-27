@@ -46,7 +46,8 @@ class LedDisplayEmulatorTask(BaseActuatorSimTask):
 
 	def _deactivateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
 		if self.sh.screen:
-			self.sh.screen.clear()
+			msg = self.getSimpleName() + ' OFF'
+			self.sh.screen.scroll_text(msg, size = 8)
 			return 0
 		else:
 			logging.warning("No SenseHAT LED screen instance to clear / close.")
