@@ -48,6 +48,12 @@ class ConfigUtil(metaclass = Singleton):
 			ConfigConst.CONSTRAINED_DEVICE, 
 			ConfigConst.DEVICE_LOCATION_ID_KEY 
 		)
+		self.simulationEnabled = None
+		self.simulationEnabled = ConfigUtil.getBoolean(
+			self,
+			ConfigConst.CONSTRAINED_DEVICE, 
+			ConfigConst.ENABLE_SIMULATOR_KEY
+		)
 	
 	#
 	# public methods
@@ -132,6 +138,10 @@ class ConfigUtil(metaclass = Singleton):
 		@param forceReload Defaults to false; if true will reload the config.
 		@return The boolean associated with 'key' in 'section', or false.
 		"""
+		if (key == ConfigConst.ENABLE_SIMULATOR_KEY and section == ConfigConst.CONSTRAINED_DEVICE and self.simulationEnabled is not None):
+			# if the simulation enabled flag is already set, return it
+			return self.simulationEnabled
+
 		return self._getConfig(forceReload).getboolean(section, key, fallback = False)
 		
 	def getInteger(self, section: str, key: str, defaultVal: int = 0, forceReload: bool = False):
@@ -198,6 +208,17 @@ class ConfigUtil(metaclass = Singleton):
 			logging.info("Set location ID: %s", self.locationID)
 		else:
 			logging.warning("Invalid location ID specified: %s", str(locationID))
+
+	def setSimulation(self, enabled: bool):
+		"""
+		Sets the simulation enabled flag for this instance of ConfigUtil.
+		All classes that use this instance will
+		automatically use the new simulation enabled flag.
+		
+		@param enabled True if simulation is enabled; False otherwise.
+		"""
+		self.simulationEnabled = enabled
+		logging.info("Set simulation enabled: %s", str(self.simulationEnabled))
 
 	#
 	# private methods

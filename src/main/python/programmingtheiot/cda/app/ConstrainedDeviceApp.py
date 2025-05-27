@@ -46,9 +46,12 @@ class ConstrainedDeviceApp():
 			)
 			self.location_id += str(self.device_id)
 			ConfigUtil().setLocationID(self.location_id)
+			# we only can emulate in one process, so if we have a device ID, we set the simulation flag
+			# emulation is only used with the normal ID.
+			ConfigUtil().setSimulation(True)
 			logging.info(f"Device location ID set to: {self.location_id}")
 		else:
-			logging.info("Initializing CDA with no specific ID.")
+			logging.info("Initializing CDA with normal ID.")
 
 		#self.sysPerfMgr = SystemPerformanceManager()
 		self.dataMgr = DeviceDataManager()
