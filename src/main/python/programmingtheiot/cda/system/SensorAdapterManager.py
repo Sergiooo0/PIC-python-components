@@ -67,6 +67,7 @@ class SensorAdapterManager(object):
 		self.humidityAdapter = None
 		self.tempAdapter = None
 		self.pressureAdapter = None
+		self.imuAdapter = None  # Added IMU adapter
 
 		self._initEnvironmentalSensorTasks()
 
@@ -131,11 +132,21 @@ class SensorAdapterManager(object):
 			teClazz = getattr(teModule, 'TemperatureSensorEmulatorTask')
 			self.tempAdapter = teClazz()
 
+			# Add IMU sensor emulator
+			ieModule = import_module('programmingtheiot.cda.emulated.ImuSensorEmulatorTask', 'ImuSensorEmulatorTask')
+			ieClazz = getattr(ieModule, 'ImuSensorEmulatorTask')
+			self.imuAdapter = ieClazz()
+
 	def handleTelemetry(self):
 		# handleTelemetry() is called every pollRate seconds
 		humidityData = self.humidityAdapter.generateTelemetry()
 		pressureData = self.pressureAdapter.generateTelemetry()
 		tempData = self.tempAdapter.generateTelemetry()
+		
+		# Only get IMU data if we're using the emulator
+		if self.useEmulator and self.imuAdapter:
+			imuData = self.imuAdapter.generateTelemetry()
+			imuData.setLocationID(self.locationID)
 
 		humidityData.setLocationID(self.locationID)
 		pressureData.setLocationID(self.locationID)
@@ -144,11 +155,16 @@ class SensorAdapterManager(object):
 		logging.debug(f"Generated humidity data: {str(humidityData)}")
 		logging.debug(f"Generated pressure data: {str(pressureData)}")
 		logging.debug(f"Generated temperature data: {str(tempData)}")
+		
+		if self.useEmulator and self.imuAdapter:
+			logging.debug(f"Generated IMU data: {str(imuData)}")
 
 		if self.dataMsgListener:
 			self.dataMsgListener.handleSensorMessage(humidityData)
 			self.dataMsgListener.handleSensorMessage(pressureData)
 			self.dataMsgListener.handleSensorMessage(tempData)
+			if self.useEmulator and self.imuAdapter:
+				self.dataMsgListener.handleSensorMessage(imuData)
 		
 	def setDataMessageListener(self, listener: IDataMessageListener) -> bool:
 		if listener:
