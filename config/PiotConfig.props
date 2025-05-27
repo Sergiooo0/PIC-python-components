@@ -37,8 +37,8 @@ enableCrypt    = False
 # CDA specific configuration information
 #
 [ConstrainedDevice]
-deviceLocationID = constraineddevice001
-deviceStandardLocationID = constraineddevice00
+deviceLocationID = constraineddevice01
+deviceStandardLocationID = constraineddevice0
 enableEmulator   = True
 enableSenseHAT   = False
 enableMqttClient = True

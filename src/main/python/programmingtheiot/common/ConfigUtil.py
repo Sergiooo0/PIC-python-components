@@ -44,6 +44,7 @@ class ConfigUtil(metaclass = Singleton):
 		logging.info("Created instance of ConfigUtil: " + str(self))
 		self.locationID = None
 		self.locationID = ConfigUtil.getProperty(
+			self,
 			ConfigConst.CONSTRAINED_DEVICE, 
 			ConfigConst.DEVICE_LOCATION_ID_KEY 
 		)
