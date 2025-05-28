@@ -40,7 +40,6 @@ class VibrationActuatorTask(BaseActuatorSimTask):
         )
         
         self.sh = SenseHAT(emulate=enableEmulation)
-        self.current_state = "NORMAL"
 
     def _activateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
         """
@@ -55,17 +54,14 @@ class VibrationActuatorTask(BaseActuatorSimTask):
             return -1
 
         try:
-            # Update state only if provided
-            if stateData:
-                self.current_state = stateData.upper()
 
             # Choose color and message based on state
-            if self.current_state == "CRITICAL":
-                msg = "CRIT: " + str(round(val, 2)) + "G"
-            elif self.current_state == "WARNING":
-                msg = "WARN: " + str(round(val, 2)) + "G"
+            if val == 2:
+                msg = "CRITICAL"
+            elif val == 1:
+                msg = "WARNING"
             else:
-                msg = "OK: " + str(round(val, 2)) + "G"
+                msg = "NORMAL"
             
             # Scroll message
             self.sh.screen.scroll_text(msg)
@@ -89,7 +85,6 @@ class VibrationActuatorTask(BaseActuatorSimTask):
         try:
             # Clear any messages and turn off display
             self.sh.screen.clear()
-            self.current_state = "NORMAL"
             return 0
             
         except Exception as e:
